@@ -11,7 +11,18 @@ const soberPeriodMap = {
 
 const riskLevelMap = {
   4: "Very High Risk",
-  3: "High-Risky",
+  3: "High-Risk",
+};
+
+const aaiPredictionMap = {
+  0: "<18",
+  1: "18-25",
+  2: "26-32",
+  3: "33-39",
+  4: "40-46",
+  5: "47-53",
+  6: "54-60",
+  7: ">60",
 };
 
 async function soberPeriodPrediction(req, res, next) {
@@ -41,11 +52,12 @@ async function aaiPrediction(req, res, next) {
       "http://127.0.0.1:9000/aaoPrediction",
       data
     );
-    console.log("data : ", data);
 
     console.log("Predicted Value:", response.data.prediction);
     // return response.data.prediction;
-    res.status(200).json({ result: riskLevelMap[response.data.prediction] });
+    var aux = parseInt(response.data.prediction);
+    console.log("MAP : ");
+    res.status(200).json({ result: aaiPredictionMap[aux] });
   } catch (error) {
     console.error("Error fetching prediction:", error);
   }
@@ -63,7 +75,8 @@ async function riskPrediction(req, res, next) {
 
     console.log("Predicted Value:", response.data.prediction);
     // return response.data.prediction;
-    res.status(200).json({ result: response.data.prediction });
+    var aux = parseInt(response.data.prediction);
+    res.status(200).json({ result: riskLevelMap[aux] });
   } catch (error) {
     console.error("Error fetching prediction:", error);
   }

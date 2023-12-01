@@ -40,10 +40,14 @@ const updatePatient = async (req, res) => {
     });
   }
 
+  console.log("UPDATE PATIENT : ", req.body.obj);
+
   const patient = await Patient.findOneAndUpdate(
     { _id: req.body.id },
     req.body.obj
   );
+
+  console.log(patient);
 
   if (patient) {
     return res.status(200).json({

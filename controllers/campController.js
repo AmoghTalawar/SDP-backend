@@ -93,7 +93,7 @@ const getAllCamp = async (req, res) => {
 };
 
 const getCampByUser = async (req, res) => {
-  const user = req.user.id;
+  // const user = req.user.id;
 
   const camp = await Camp.find();
 

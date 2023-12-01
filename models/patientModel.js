@@ -8,6 +8,9 @@ const patientSchema = mongoose.Schema(
     patientId: {
       type: Number,
     },
+    aadharNumber: {
+      type: String,
+    },
     campId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -68,6 +71,9 @@ const patientSchema = mongoose.Schema(
 
     complaints: [
       {
+        drug_type: {
+          type: String,
+        },
         drug: {
           type: String,
         },
