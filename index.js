@@ -25,7 +25,13 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-app.use(cors());
+const corsOptions = {
+  origin: ["http://localhost:3000", "https://sdp-client-cy7h.vercel.app"], // or the specific domain of your client app
+  optionsSuccessStatus: 200, // For legacy browser support
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 app.use("/api/location", locationRoutes);
