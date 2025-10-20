@@ -19,6 +19,7 @@ import { subscribedUserTemplate } from "../templates/subscribedUserTemplate.js";
 
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     res.status(400).json({
       code: 400,
@@ -27,41 +28,43 @@ const authUser = asyncHandler(async (req, res) => {
     });
     throw new Error("Bad Request");
   }
-  const user = await User.findOne({ email });
 
-  if (!user) {
-    return res.status(404).json({
-      code: 404,
-      success: false,
-      message: "User Doesn't Exist!",
-    });
-  }
+  try {
+    const user = await User.findOne({ email });
 
-  if (user && user.password === password) {
-    res.json({
-      code: 200,
-      message: "userloggedin succesfully",
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
-      },
-    });
-    // }
-  } else {
-    // if (user && !user.emailVerified) {
-    //   res.status(403).json({
-    //     code: 403,
-    //     success: false,
-    //     message: "Email is not verified",
-    //   });
-    // }
-    res.status(401).json({
-      code: 401,
+    if (!user) {
+      return res.status(404).json({
+        code: 404,
+        success: false,
+        message: "User Doesn't Exist!",
+      });
+    }
+
+    if (user && (await user.matchPassword(password))) {
+      res.json({
+        code: 200,
+        message: "userloggedin succesfully",
+        data: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          token: generateToken(user._id),
+        },
+      });
+    } else {
+      res.status(401).json({
+        code: 401,
+        success: false,
+        message: "Email and Password do not match",
+      });
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({
+      code: 500,
       success: false,
-      message: "Email and Password do not match",
+      message: "Internal server error during login",
     });
   }
 });
@@ -71,6 +74,16 @@ const authUser = asyncHandler(async (req, res) => {
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, locationId } = req.body;
+
+  // Validate required fields
+  if (!name || !email || !password || !locationId) {
+    return res.status(400).json({
+      code: 400,
+      success: false,
+      message: "Name, email, password, and locationId are required",
+    });
+  }
+
   console.log("Request Body : ", req.body);
   const userExists = await User.findOne({ email });
   if (userExists) {
