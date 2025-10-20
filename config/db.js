@@ -28,16 +28,16 @@ const connectDB = async () => {
     connectionAttempts++;
     console.log(`MongoDB connection attempt ${connectionAttempts}/${MAX_CONNECTION_ATTEMPTS}`);
 
-    // Minimal connection options for serverless
+    // Ultra-minimal connection options for serverless
     const options = {
-      serverSelectionTimeoutMS: 1000, // 1 second (very fast)
-      socketTimeoutMS: 3000, // 3 seconds (minimum)
-      connectTimeoutMS: 1000, // 1 second connection timeout
+      serverSelectionTimeoutMS: 800, // 0.8 seconds (very fast)
+      socketTimeoutMS: 2000, // 2 seconds (minimum)
+      connectTimeoutMS: 800, // 0.8 seconds connection timeout
       bufferCommands: false,
       bufferMaxEntries: 0,
       maxPoolSize: 1,
       minPoolSize: 0,
-      maxIdleTimeMS: 1000,
+      maxIdleTimeMS: 800,
       family: 4,
       heartbeatFrequencyMS: 30000,
     };

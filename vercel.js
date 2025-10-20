@@ -111,6 +111,59 @@ app.post("/test-login", async (req, res) => {
   });
 });
 
+// Database connectivity test (optional)
+app.get("/db-test", async (req, res) => {
+  try {
+    const connectDB = (await import("./config/db.js")).default;
+    const conn = await connectDB();
+    res.json({
+      message: "Database connection successful",
+      host: conn.connection.host,
+      status: "connected"
+    });
+  } catch (error) {
+    res.status(503).json({
+      message: "Database connection failed",
+      error: error.message,
+      status: "disconnected"
+    });
+  }
+});
+
+// Simple login test with mock data (for testing when DB is down)
+app.post("/test-login", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      code: 400,
+      success: false,
+      message: "Email and Password Both are Required",
+    });
+  }
+
+  // Mock successful login for testing
+  if (email === "test@test.com" && password === "test123") {
+    return res.json({
+      code: 200,
+      message: "Test login successful",
+      data: {
+        _id: "test-user-id",
+        name: "Test User",
+        email: email,
+        role: "admin",
+        token: "test-token-123",
+      },
+    });
+  }
+
+  res.status(401).json({
+    code: 401,
+    success: false,
+    message: "Test credentials: test@test.com / test123",
+  });
+});
+
 // Database connection middleware with better error handling
 const dbMiddleware = async (req, res, next) => {
   try {
