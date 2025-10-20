@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 // Global connection cache for serverless
 let cachedConnection = null;
 let connectionAttempts = 0;
-const MAX_CONNECTION_ATTEMPTS = 3;
+const MAX_CONNECTION_ATTEMPTS = 2; // Reduced for faster failure
 
 const connectDB = async () => {
   try {
@@ -30,14 +30,14 @@ const connectDB = async () => {
 
     // Ultra-minimal connection options for serverless
     const options = {
-      serverSelectionTimeoutMS: 800, // 0.8 seconds (very fast)
-      socketTimeoutMS: 2000, // 2 seconds (minimum)
-      connectTimeoutMS: 800, // 0.8 seconds connection timeout
+      serverSelectionTimeoutMS: 600, // 0.6 seconds (very fast)
+      socketTimeoutMS: 1500, // 1.5 seconds (minimum)
+      connectTimeoutMS: 600, // 0.6 seconds connection timeout
       bufferCommands: false,
       bufferMaxEntries: 0,
       maxPoolSize: 1,
       minPoolSize: 0,
-      maxIdleTimeMS: 800,
+      maxIdleTimeMS: 600,
       family: 4,
       heartbeatFrequencyMS: 30000,
     };
