@@ -5,12 +5,13 @@ const registerPatient = async (req, res) => {
   const obj = req.body.obj;
   console.log(obj);
 
-  if (!obj.campId) {
-    return res.status(400).json({
-      code: 400,
-      message: "Bad request",
-    });
-  }
+  // Camp ID is now optional - will be set to null if not provided
+  // if (!obj.campId) {
+  //   return res.status(400).json({
+  //     code: 400,
+  //     message: "Camp ID is required",
+  //   });
+  // }
 
   obj.faculty = faculty;
   obj.patientId = (await Patient.countDocuments()) + 1;

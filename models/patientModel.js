@@ -13,7 +13,7 @@ const patientSchema = mongoose.Schema(
     },
     campId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
     faculty: {
       type: mongoose.Schema.Types.ObjectId,
