@@ -41,7 +41,9 @@ app.get("/health", (req, res) => {
   res.json({
     status: "OK",
     message: "Server is healthy",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    mongodb_uri_configured: !!process.env.MONGO_URI,
+    jwt_secret_configured: !!process.env.JWT_SECRET
   });
 });
 
@@ -53,61 +55,6 @@ app.get("/test", (req, res) => {
     timestamp: new Date().toISOString(),
     mongodb_uri_configured: !!process.env.MONGO_URI,
     jwt_secret_configured: !!process.env.JWT_SECRET
-  });
-});
-
-// Database connectivity test (optional)
-app.get("/db-test", async (req, res) => {
-  try {
-    const connectDB = (await import("./config/db.js")).default;
-    const conn = await connectDB();
-    res.json({
-      message: "Database connection successful",
-      host: conn.connection.host,
-      status: "connected",
-      connectionAttempts: 0
-    });
-  } catch (error) {
-    res.status(503).json({
-      message: "Database connection failed",
-      error: error.message,
-      status: "disconnected",
-      suggestion: "Check MongoDB cluster accessibility and network restrictions"
-    });
-  }
-});
-
-// Simple login test with mock data (for testing when DB is down)
-app.post("/test-login", async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({
-      code: 400,
-      success: false,
-      message: "Email and Password Both are Required",
-    });
-  }
-
-  // Mock successful login for testing
-  if (email === "test@test.com" && password === "test123") {
-    return res.json({
-      code: 200,
-      message: "Test login successful",
-      data: {
-        _id: "test-user-id",
-        name: "Test User",
-        email: email,
-        role: "admin",
-        token: "test-token-123",
-      },
-    });
-  }
-
-  res.status(401).json({
-    code: 401,
-    success: false,
-    message: "Test credentials: test@test.com / test123",
   });
 });
 
@@ -251,6 +198,14 @@ app.use("/api/patient", dbMiddleware, patientRoutes);
 app.use("/api/camp", dbMiddleware, campRoutes);
 app.use("/api/iot", dbMiddleware, iotRoutes);
 app.use("/api/prediction", dbMiddleware, predictionRoutes);
+
+// Add a simple fallback route for testing
+app.get("/ping", (req, res) => {
+  res.json({
+    message: "Server is responding",
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.use(helmet());
 
