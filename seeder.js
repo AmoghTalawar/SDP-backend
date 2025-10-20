@@ -25,10 +25,10 @@ const importData = async () => {
 
 
     console.log("Data Imported!".green.inverse);
-    process.exit();
+    return { success: true, message: "Data imported successfully" };
   } catch (error) {
     console.error(`${error}`.red.inverse);
-    process.exit(1);
+    throw error;
   }
 };
 
@@ -39,15 +39,28 @@ const destroyData = async () => {
 
 
     console.log("Data Destroyed!".red.inverse);
-    process.exit();
+    return { success: true, message: "Data destroyed successfully" };
   } catch (error) {
     console.error(`${error}`.red.inverse);
-    process.exit(1);
+    throw error;
   }
 };
 
-if (process.argv[2] === "-d") {
-  destroyData();
-} else {
-  importData();
+// Only run if this file is executed directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv[2] === "-d") {
+    destroyData().then(() => {
+      console.log("Seeder completed");
+    }).catch(() => {
+      console.log("Seeder failed");
+    });
+  } else {
+    importData().then(() => {
+      console.log("Seeder completed");
+    }).catch(() => {
+      console.log("Seeder failed");
+    });
+  }
 }
+
+export { importData, destroyData };
