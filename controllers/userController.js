@@ -30,7 +30,13 @@ const authUser = asyncHandler(async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    // Add timeout to the query itself
+    const user = await Promise.race([
+      User.findOne({ email }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Query timeout')), 8000)
+      )
+    ]);
 
     if (!user) {
       return res.status(404).json({
@@ -61,6 +67,16 @@ const authUser = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     console.error("Login error:", error);
+
+    // Handle specific MongoDB timeout errors
+    if (error.message.includes('buffering timed out') || error.message.includes('Query timeout')) {
+      return res.status(503).json({
+        code: 503,
+        success: false,
+        message: "Database temporarily unavailable - please try again",
+      });
+    }
+
     res.status(500).json({
       code: 500,
       success: false,

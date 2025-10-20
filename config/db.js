@@ -19,6 +19,9 @@ const connectDB = async () => {
       throw new Error("MongoDB URI not provided in environment variables");
     }
 
+    // Ensure the URI doesn't have problematic parameters for serverless
+    const cleanUri = mongoUri.replace(/&w=majority/g, '');
+
     console.log("Connecting to MongoDB...");
 
     // Set up connection event listeners
@@ -36,20 +39,21 @@ const connectDB = async () => {
 
     // Serverless-optimized connection options
     const options = {
-      serverSelectionTimeoutMS: 5000, // 5 seconds timeout
-      socketTimeoutMS: 45000, // 45 seconds
-      connectTimeoutMS: 5000, // 5 seconds connection timeout
+      serverSelectionTimeoutMS: 3000, // 3 seconds timeout (reduced)
+      socketTimeoutMS: 30000, // 30 seconds (reduced)
+      connectTimeoutMS: 3000, // 3 seconds connection timeout (reduced)
       bufferCommands: false, // Disable mongoose buffering
       bufferMaxEntries: 0, // Disable mongoose buffering
       maxPoolSize: 1, // Maintain up to 1 socket connections
       minPoolSize: 0, // Don't maintain unnecessary connections
-      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+      maxIdleTimeMS: 10000, // Close connections after 10 seconds of inactivity
       family: 4, // Use IPv4, skip trying IPv6
       retryWrites: true,
       retryReads: true,
+      heartbeatFrequencyMS: 10000, // Send heartbeat every 10 seconds
     };
 
-    const conn = await mongoose.connect(mongoUri, options);
+    const conn = await mongoose.connect(cleanUri, options);
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;

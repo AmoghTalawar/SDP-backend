@@ -33,7 +33,25 @@ app.use(express.json());
 
 // Health check endpoint (no database needed)
 app.get("/", (req, res) => {
-  res.send("API is running....");
+  res.send("✅ API is running successfully on Vercel!");
+});
+
+// Simple health check endpoint
+app.get("/health", (req, res) => {
+  res.json({
+    status: "OK",
+    message: "Server is healthy",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Test endpoint without database
+app.get("/test", (req, res) => {
+  res.json({
+    message: "Server is responding correctly",
+    environment: process.env.NODE_ENV || "development",
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Database connection middleware with better error handling
