@@ -1,17 +1,8 @@
 import express from "express";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import morgan from "morgan";
-import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
-import connectDB from "./config/db.js";
-import helmet from "helmet";
-import userRoutes from "./routes/userRoutes.js";
-import locationRoutes from "./routes/locationRoutes.js";
-import campRoutes from "./routes/campRoutes.js";
-import patientRoutes from "./routes/patientRoutes.js";
-import iotRoutes from "./routes/iotRoutes.js";
-import predictionRoutes from "./routes/predictionRoute.js";
 import cors from "cors";
+import helmet from "helmet";
+import dotenv from "dotenv";
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 // Load environment variables
 dotenv.config();
@@ -19,10 +10,6 @@ dotenv.config();
 const app = express();
 
 // Basic middleware
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
-
 const corsOptions = {
   origin: ["http://localhost:3000", "http://localhost:3001", "https://sdp-client-cy7h.vercel.app", "https://sdp-client-tau.vercel.app"],
   optionsSuccessStatus: 200,
@@ -33,6 +20,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(helmet());
 
 // Health check endpoint (no database needed)
 app.get("/", (req, res) => {
@@ -76,34 +64,6 @@ app.get("/deployment-status", (req, res) => {
   });
 });
 
-// Database connectivity test (optional)
-app.get("/db-test", async (req, res) => {
-  try {
-    // Skip database connection test during deployment
-    if (process.env.VERCEL_DEPLOYMENT_ID) {
-      return res.json({
-        message: "Database test skipped during deployment",
-        status: "deployment",
-        deployment_id: process.env.VERCEL_DEPLOYMENT_ID
-      });
-    }
-
-    const connectDB = (await import("./config/db.js")).default;
-    const conn = await connectDB();
-    res.json({
-      message: "Database connection successful",
-      host: conn.connection.host,
-      status: "connected"
-    });
-  } catch (error) {
-    res.status(503).json({
-      message: "Database connection failed",
-      error: error.message,
-      status: "disconnected"
-    });
-  }
-});
-
 // Simple login test with mock data (for testing when DB is down)
 app.post("/test-login", async (req, res) => {
   const { email, password } = req.body;
@@ -138,49 +98,14 @@ app.post("/test-login", async (req, res) => {
   });
 });
 
-// Database connection middleware with better error handling
-const dbMiddleware = async (req, res, next) => {
-  try {
-    // Skip database connection during deployment
-    if (process.env.VERCEL_DEPLOYMENT_ID) {
-      return res.status(503).json({
-        message: "API temporarily unavailable during deployment",
-        deployment_id: process.env.VERCEL_DEPLOYMENT_ID,
-        status: "deployment"
-      });
-    }
-
-    // Only connect if not already connected
-    if (mongoose && mongoose.connection.readyState !== 1) {
-      await connectDB();
-    }
-    next();
-  } catch (error) {
-    console.error("Database connection error:", error);
-
-    // Handle specific MongoDB timeout errors
-    if (error.name === 'MongooseTimeoutError' || error.message.includes('buffering timed out')) {
-      return res.status(503).json({
-        message: "Database temporarily unavailable",
-        error: "Connection timeout - please try again"
-      });
-    }
-
-    // Return service unavailable instead of crashing
-    res.status(503).json({
-      message: "Service temporarily unavailable",
-      error: "Database connection failed"
-    });
-  }
-};
-
-// Apply database middleware and routes
-app.use("/api/location", dbMiddleware, locationRoutes);
-app.use("/api/user", dbMiddleware, userRoutes);
-app.use("/api/patient", dbMiddleware, patientRoutes);
-app.use("/api/camp", dbMiddleware, campRoutes);
-app.use("/api/iot", dbMiddleware, iotRoutes);
-app.use("/api/prediction", dbMiddleware, predictionRoutes);
+// API routes that require database connections - simplified for deployment
+app.get("/api/user/login", (req, res) => {
+  res.status(503).json({
+    message: "Login functionality temporarily unavailable during deployment",
+    deployment_id: process.env.VERCEL_DEPLOYMENT_ID,
+    status: "deployment"
+  });
+});
 
 // Add a simple fallback route for testing
 app.get("/ping", (req, res) => {
@@ -189,8 +114,6 @@ app.get("/ping", (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-
-app.use(helmet());
 
 // Error handling middleware (should be last)
 app.use(notFound);
