@@ -3,7 +3,11 @@
   "builds": [
     {
       "src": "vercel.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["**"],
+        "experimentalResponseStreaming": false
+      }
     }
   ],
   "routes": [
@@ -11,5 +15,10 @@
       "src": "/(.*)",
       "dest": "/vercel.js"
     }
-  ]
+  ],
+  "functions": {
+    "vercel.js": {
+      "runtime": "nodejs22.x"
+    }
+  }
 }
