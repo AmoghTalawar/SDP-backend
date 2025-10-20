@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import colors from "colors";
 import { users, locations } from "./data/users.js";;
 import User from "./models/userModel.js";
 import Location from "./models/locationModel.js";
@@ -24,10 +23,10 @@ const importData = async () => {
     const adminUser = createdUsers[0]._id;
 
 
-    console.log("Data Imported!".green.inverse);
+    console.log("Data Imported!");
     return { success: true, message: "Data imported successfully" };
   } catch (error) {
-    console.error(`${error}`.red.inverse);
+    console.error(`Error: ${error}`);
     throw error;
   }
 };
@@ -38,10 +37,10 @@ const destroyData = async () => {
     await Location.deleteMany();
 
 
-    console.log("Data Destroyed!".red.inverse);
+    console.log("Data Destroyed!");
     return { success: true, message: "Data destroyed successfully" };
   } catch (error) {
-    console.error(`${error}`.red.inverse);
+    console.error(`Error: ${error}`);
     throw error;
   }
 };
