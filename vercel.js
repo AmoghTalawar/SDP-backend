@@ -58,13 +58,36 @@ app.get("/test", (req, res) => {
     timestamp: new Date().toISOString(),
     mongodb_uri_configured: !!process.env.MONGO_URI,
     jwt_secret_configured: !!process.env.JWT_SECRET,
-    vercel_deployment: true
+    vercel_deployment: true,
+    deployment_id: process.env.VERCEL_DEPLOYMENT_ID || "local"
+  });
+});
+
+// Deployment status endpoint
+app.get("/deployment-status", (req, res) => {
+  res.json({
+    status: "deployed",
+    message: "Application deployed successfully",
+    timestamp: new Date().toISOString(),
+    deployment_id: process.env.VERCEL_DEPLOYMENT_ID || "local",
+    environment: process.env.NODE_ENV || "development",
+    mongodb_uri_configured: !!process.env.MONGO_URI,
+    jwt_secret_configured: !!process.env.JWT_SECRET
   });
 });
 
 // Database connectivity test (optional)
 app.get("/db-test", async (req, res) => {
   try {
+    // Skip database connection test during deployment
+    if (process.env.VERCEL_DEPLOYMENT_ID) {
+      return res.json({
+        message: "Database test skipped during deployment",
+        status: "deployment",
+        deployment_id: process.env.VERCEL_DEPLOYMENT_ID
+      });
+    }
+
     const connectDB = (await import("./config/db.js")).default;
     const conn = await connectDB();
     res.json({
@@ -118,6 +141,15 @@ app.post("/test-login", async (req, res) => {
 // Database connection middleware with better error handling
 const dbMiddleware = async (req, res, next) => {
   try {
+    // Skip database connection during deployment
+    if (process.env.VERCEL_DEPLOYMENT_ID) {
+      return res.status(503).json({
+        message: "API temporarily unavailable during deployment",
+        deployment_id: process.env.VERCEL_DEPLOYMENT_ID,
+        status: "deployment"
+      });
+    }
+
     // Only connect if not already connected
     if (mongoose && mongoose.connection.readyState !== 1) {
       await connectDB();
