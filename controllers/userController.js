@@ -61,6 +61,27 @@ const authUser = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     console.error("Login error:", error);
+
+    // Handle MongoDB connection/timeout errors specifically
+    if (error.name === 'MongooseError' && error.message.includes('buffering timed out')) {
+      return res.status(503).json({
+        code: 503,
+        success: false,
+        message: "Database temporarily unavailable - please try again in a few moments",
+        error: "CONNECTION_TIMEOUT"
+      });
+    }
+
+    // Handle other MongoDB errors
+    if (error.name === 'MongooseError' || error.name === 'MongoError') {
+      return res.status(503).json({
+        code: 503,
+        success: false,
+        message: "Database service temporarily unavailable",
+        error: "DATABASE_ERROR"
+      });
+    }
+
     res.status(500).json({
       code: 500,
       success: false,
