@@ -30,16 +30,14 @@ const connectDB = async () => {
 
     // Ultra-minimal connection options for serverless
     const options = {
-      serverSelectionTimeoutMS: 600, // 0.6 seconds (very fast)
-      socketTimeoutMS: 1500, // 1.5 seconds (minimum)
-      connectTimeoutMS: 600, // 0.6 seconds connection timeout
+      serverSelectionTimeoutMS: 5000, // 5 seconds (reasonable timeout)
+      socketTimeoutMS: 45000, // 45 seconds (standard timeout)
+      connectTimeoutMS: 5000, // 5 seconds connection timeout
       bufferCommands: false,
-      bufferMaxEntries: 0,
       maxPoolSize: 1,
       minPoolSize: 0,
-      maxIdleTimeMS: 600,
+      maxIdleTimeMS: 30000,
       family: 4,
-      heartbeatFrequencyMS: 30000,
     };
 
     const conn = await mongoose.connect(mongoUri, options);
