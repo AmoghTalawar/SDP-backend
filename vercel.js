@@ -57,7 +57,8 @@ app.get("/test", (req, res) => {
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
     mongodb_uri_configured: !!process.env.MONGO_URI,
-    jwt_secret_configured: !!process.env.JWT_SECRET
+    jwt_secret_configured: !!process.env.JWT_SECRET,
+    vercel_deployment: true
   });
 });
 
@@ -194,6 +195,14 @@ const dbMiddleware = async (req, res, next) => {
   }
 };
 
+// Add a simple fallback route for testing (before database middleware)
+app.get("/ping", (req, res) => {
+  res.json({
+    message: "Server is responding",
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Apply database middleware and routes
 app.use("/api/location", dbMiddleware, locationRoutes);
 app.use("/api/user", dbMiddleware, userRoutes);
@@ -201,14 +210,6 @@ app.use("/api/patient", dbMiddleware, patientRoutes);
 app.use("/api/camp", dbMiddleware, campRoutes);
 app.use("/api/iot", dbMiddleware, iotRoutes);
 app.use("/api/prediction", dbMiddleware, predictionRoutes);
-
-// Add a simple fallback route for testing
-app.get("/ping", (req, res) => {
-  res.json({
-    message: "Server is responding",
-    timestamp: new Date().toISOString()
-  });
-});
 
 // Add a simple fallback route for testing
 app.get("/ping", (req, res) => {
