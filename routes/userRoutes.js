@@ -22,23 +22,16 @@ router.post("/login", authUser);
 
 router.route("/sendresetlink").post(sendResetPassword);
 
-
 router
   .route("/profile")
-  .get(protect, getUserProfile)
-  
+  .get(protect, getUserProfile);
+
 router
   .route("/:id")
   .delete(protect, admin, deleteUser)
   .get(protect, admin, getUserById)
   .put(protect, admin, updateUser);
 
- router
- .route("/subscribe")
-
-
-
 router.route("/reset/:token").post(resetPassword);
-
 
 export default router;

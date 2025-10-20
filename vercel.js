@@ -54,14 +54,13 @@ const dbMiddleware = async (req, res, next) => {
   }
 };
 
-// Apply to all API routes
-app.use("/api", dbMiddleware);
-app.use("/api/location", locationRoutes);
-app.use("/api/user", userRoutes);
-app.use("/api/patient", patientRoutes);
-app.use("/api/camp", campRoutes);
-app.use("/api/iot", iotRoutes);
-app.use("/api/prediction", predictionRoutes);
+// Apply database middleware and routes
+app.use("/api/location", dbMiddleware, locationRoutes);
+app.use("/api/user", dbMiddleware, userRoutes);
+app.use("/api/patient", dbMiddleware, patientRoutes);
+app.use("/api/camp", dbMiddleware, campRoutes);
+app.use("/api/iot", dbMiddleware, iotRoutes);
+app.use("/api/prediction", dbMiddleware, predictionRoutes);
 
 app.use(helmet());
 

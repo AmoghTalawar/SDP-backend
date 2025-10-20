@@ -12,21 +12,16 @@ import {
 import { protect, admin } from "../middleware/authMiddleware.js";
 
 router
-.route("/")
-.post(protect, admin, registerCamp)
-.get(protect, admin, getAllCamp);
-
-
-router
-.route("/:id")
-.put(protect, admin, updateCamp)
-
-
+  .route("/")
+  .post(protect, admin, registerCamp)
+  .get(protect, admin, getAllCamp);
 
 router
-.route("/user")
-.get(protect, getCampByUser)
+  .route("/:id")
+  .put(protect, admin, updateCamp);
 
-
+router
+  .route("/user")
+  .get(protect, getCampByUser);
 
 export default router;

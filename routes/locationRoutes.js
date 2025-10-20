@@ -11,14 +11,12 @@ import {
 import { protect, admin } from "../middleware/authMiddleware.js";
 
 router
-    .route("/")
-    .post(protect, admin, registerLocation)
-    .get(protect, admin, getLocations);
-
+  .route("/")
+  .post(protect, admin, registerLocation)
+  .get(protect, admin, getLocations);
 
 router
-    .route("/:id")
-    .put(protect, admin, updateLocation)
-    
+  .route("/:id")
+  .put(protect, admin, updateLocation);
 
 export default router;

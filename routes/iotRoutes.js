@@ -2,13 +2,11 @@ import express from "express";
 
 const router = express.Router();
 import {
-    getIot
+  getIot
 } from "../controllers/iotController.js";
 
-
-
 router
-    .route("/")
-    .get(getIot)
+  .route("/")
+  .get(getIot);
 
 export default router;
