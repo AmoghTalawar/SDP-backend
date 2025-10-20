@@ -46,6 +46,15 @@ const dbMiddleware = async (req, res, next) => {
     next();
   } catch (error) {
     console.error("Database connection error:", error);
+
+    // Handle specific MongoDB timeout errors
+    if (error.name === 'MongooseTimeoutError' || error.message.includes('buffering timed out')) {
+      return res.status(503).json({
+        message: "Database temporarily unavailable",
+        error: "Connection timeout - please try again"
+      });
+    }
+
     // Return service unavailable instead of crashing
     res.status(503).json({
       message: "Service temporarily unavailable",
