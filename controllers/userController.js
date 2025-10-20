@@ -8,7 +8,6 @@ import {
 } from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
 import axios from "axios";
-import Affiliate from "../models/patientModel.js";
 
 import { sendMail } from "../utils/sendEmail.js";
 import { emailVerificationTemplate } from "../templates/welcomeTemplate.js";
@@ -38,11 +37,7 @@ const authUser = asyncHandler(async (req, res) => {
     });
   }
 
-  if (
-    user &&
-    (await //user.matchPassword(password)
-    user.password) == password
-  ) {
+  if (user && user.password === password) {
     res.json({
       code: 200,
       message: "userloggedin succesfully",
@@ -130,42 +125,17 @@ const getUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
-    if (user.isAffiliate) {
-      const affilate = await Affiliate.findOne({ user_id: user._id });
-
-      if (affilate) {
-        res.json({
-          code: 200,
-          success: true,
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-          isSubscribed: user.isSubscribed,
-          isAffiliate: user.isAffiliate,
-          coupon: affilate.coupon,
-          balance: affilate.balance,
-        });
-      } else {
-        res.json({
-          code: 401,
-          message: "error getting affiliate",
-          success: false,
-        });
-      }
-    } else {
-      res.json({
-        code: 200,
-        success: true,
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        isSubscribed: user.isSubscribed,
-        package: user.package,
-        isAffiliate: user.isAffiliate,
-      });
-    }
+    res.json({
+      code: 200,
+      success: true,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isSubscribed: user.isSubscribed,
+      package: user.package,
+      isAffiliate: user.isAffiliate,
+    });
   } else {
     res.status(404).json({
       code: 404,
@@ -292,6 +262,15 @@ const sendResetPassword = async (req, res) => {
 
     const verificationToken = passwordResetVerificationToken(user._id);
 
+    // Skip email sending in serverless environment if credentials not available
+    if (!process.env.EMAIL || !process.env.PASSWORD) {
+      return res.status(200).json({
+        code: 200,
+        message: "Password reset requested (email service not configured)",
+        emailSent: false,
+      });
+    }
+
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
@@ -351,11 +330,19 @@ const resetPassword = async (req, res) => {
   let payload = null;
 
   try {
-    payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        message: "Server configuration error"
+      });
+    }
 
+    payload = jwt.verify(token, process.env.JWT_SECRET);
     console.log(payload.id);
   } catch (err) {
-    return res.status(500).send(err);
+    console.error("JWT verification error:", err);
+    return res.status(401).json({
+      message: "Invalid or expired token"
+    });
   }
   try {
     const user = await User.findOne({ _id: payload.id });
