@@ -3,6 +3,9 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+import connectDB from "./config/db.js";
+import User from "./models/userModel.js";
+import { generateToken } from "./utils/generateToken.js";
 
 // Load environment variables
 dotenv.config();
@@ -98,13 +101,82 @@ app.post("/test-login", async (req, res) => {
   });
 });
 
-// API routes that require database connections - simplified for deployment
-app.get("/api/user/login", (req, res) => {
-  res.status(503).json({
-    message: "Login functionality temporarily unavailable during deployment",
-    deployment_id: process.env.VERCEL_DEPLOYMENT_ID,
-    status: "deployment"
-  });
+// User login endpoint with database connectivity
+app.post("/api/user/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        code: 400,
+        success: false,
+        message: "Email and Password Both are Required",
+      });
+    }
+
+    // Connect to database
+    const conn = await connectDB();
+
+    // Find user in database
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        code: 404,
+        success: false,
+        message: "User Doesn't Exist!",
+      });
+    }
+
+    // Check password
+    if (user && (await user.matchPassword(password))) {
+      res.json({
+        code: 200,
+        message: "User logged in successfully",
+        data: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          token: generateToken(user._id),
+        },
+      });
+    } else {
+      res.status(401).json({
+        code: 401,
+        success: false,
+        message: "Email and Password do not match",
+      });
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+
+    // Handle MongoDB connection/timeout errors specifically
+    if (error.name === 'MongooseError' && error.message.includes('buffering timed out')) {
+      return res.status(503).json({
+        code: 503,
+        success: false,
+        message: "Database temporarily unavailable - please try again in a few moments",
+        error: "CONNECTION_TIMEOUT"
+      });
+    }
+
+    // Handle other MongoDB errors
+    if (error.name === 'MongooseError' || error.name === 'MongoError') {
+      return res.status(503).json({
+        code: 503,
+        success: false,
+        message: "Database service temporarily unavailable",
+        error: "DATABASE_ERROR"
+      });
+    }
+
+    res.status(500).json({
+      code: 500,
+      success: false,
+      message: "Internal server error during login",
+    });
+  }
 });
 
 // Add a simple fallback route for testing
