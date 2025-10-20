@@ -26,6 +26,9 @@ if (process.env.NODE_ENV === "development") {
 const corsOptions = {
   origin: ["http://localhost:3000", "http://localhost:3001", "https://sdp-client-cy7h.vercel.app", "https://sdp-client-tau.vercel.app"],
   optionsSuccessStatus: 200,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
@@ -198,6 +201,14 @@ app.use("/api/patient", dbMiddleware, patientRoutes);
 app.use("/api/camp", dbMiddleware, campRoutes);
 app.use("/api/iot", dbMiddleware, iotRoutes);
 app.use("/api/prediction", dbMiddleware, predictionRoutes);
+
+// Add a simple fallback route for testing
+app.get("/ping", (req, res) => {
+  res.json({
+    message: "Server is responding",
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Add a simple fallback route for testing
 app.get("/ping", (req, res) => {
