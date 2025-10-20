@@ -114,7 +114,7 @@ app.post("/api/user/login", async (req, res) => {
       });
     }
 
-    // Try database authentication first
+    // Try database authentication first with timeout protection
     try {
       const conn = await connectDB();
       const user = await User.findOne({ email });
