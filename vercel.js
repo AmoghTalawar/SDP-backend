@@ -1,10 +1,7 @@
-import path from "path";
 import express from "express";
 import dotenv from "dotenv";
-import colors from "colors";
 import morgan from "morgan";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
-import connectDB from "./config/db.js";
 import helmet from "helmet";
 import userRoutes from "./routes/userRoutes.js";
 import locationRoutes from "./routes/locationRoutes.js";
@@ -17,11 +14,9 @@ import cors from "cors";
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 const app = express();
 
+// Middleware
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -34,22 +29,35 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// API routes
-app.use("/api/location", locationRoutes);
-app.use("/api/user", userRoutes);
-app.use("/api/patient", patientRoutes);
-app.use("/api/camp", campRoutes);
-app.use("/api/iot", iotRoutes);
-app.use("/api/prediction", predictionRoutes);
-
-app.use(helmet());
-
-// Health check endpoint
+// Health check endpoint (no database needed)
 app.get("/", (req, res) => {
   res.send("API is running....");
 });
 
-// Error handling middleware
+// API routes with database connection middleware
+const connectDBMiddleware = async (req, res, next) => {
+  try {
+    // Lazy load the database connection only when needed
+    const connectDB = (await import("./config/db.js")).default;
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).json({ message: "Database connection failed" });
+  }
+};
+
+// Apply database connection middleware only to API routes that need it
+app.use("/api/location", connectDBMiddleware, locationRoutes);
+app.use("/api/user", connectDBMiddleware, userRoutes);
+app.use("/api/patient", connectDBMiddleware, patientRoutes);
+app.use("/api/camp", connectDBMiddleware, campRoutes);
+app.use("/api/iot", connectDBMiddleware, iotRoutes);
+app.use("/api/prediction", connectDBMiddleware, predictionRoutes);
+
+app.use(helmet());
+
+// Error handling middleware (should be last)
 app.use(notFound);
 app.use(errorHandler);
 
