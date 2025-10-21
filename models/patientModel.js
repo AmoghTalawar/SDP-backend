@@ -36,39 +36,30 @@ const patientSchema = mongoose.Schema(
     taluk: {
       type: String,
     },
-
     phone: {
       type: String,
     },
-
     community: {
       type: String,
     },
-
     education_in_year: {
       type: String,
     },
-
     occupation: {
       type: String,
     },
-
     annual_income: {
       type: String,
     },
-
     marital_status: {
       type: String,
     },
-
     living_arrangement: {
       type: String,
     },
-
     refferal: {
       type: String,
     },
-
     complaints: [
       {
         drug_type: {
@@ -97,94 +88,72 @@ const patientSchema = mongoose.Schema(
         },
       },
     ],
-
     reason_start: {
       type: String,
     },
     reason_continue: {
       type: String,
     },
-
     stressors: {
       type: String,
     },
-
     last_use_date: {
       type: Date,
     },
-
     last_use_quantity: {
       type: String,
     },
-
     impression_of_camp_officer: {
       type: String,
     },
-
     denial_of_substance_use_related_problems: {
       type: String,
     },
-
     motivation_factor: {
       type: String,
     },
-
     willingness_for_treatment: {
       type: String,
     },
-
     action_taken: {
       type: String,
     },
-
     weight_while_admission_in_kg: {
       type: String,
     },
-
     weight_while_discharge_in_kg: {
       type: String,
     },
-
     height_in_ft: {
       type: String,
     },
-
     sugar_in_mg: {
       type: String,
     },
-
     other_issues: {
       type: String,
     },
-
     withdrawal_symptoms_experienced_when_the_patient_stopped: {
       type: String,
     },
-
     past_medical_problem: {
       type: String,
     },
-
     present_medical_problem: {
       type: String,
     },
-
     chronic_health_problem: {
       type: String,
     },
-
     past_psychiatric_complication: {
       type: String,
     },
-
     present_psychiatric_complication: {
       type: String,
     },
-
     history_of_previous_head_injureies: {
       type: String,
     },
-
     family_history: [
       {
         member: {
@@ -207,7 +176,6 @@ const patientSchema = mongoose.Schema(
         },
       },
     ],
-
     family_health_status: [
       {
         member: {
@@ -221,7 +189,6 @@ const patientSchema = mongoose.Schema(
         },
       },
     ],
-
     extra_marital_experience: {
       type: String,
     },
@@ -328,7 +295,6 @@ const patientSchema = mongoose.Schema(
         },
       },
     ],
-
     financial_history: {
       debts: {
         type: String,
@@ -337,7 +303,6 @@ const patientSchema = mongoose.Schema(
         type: Number,
       },
     },
-
     legal_history: [
       {
         name: {
@@ -348,7 +313,6 @@ const patientSchema = mongoose.Schema(
         },
       },
     ],
-
     childhood_history: {
       detail: {
         type: String,
@@ -357,7 +321,6 @@ const patientSchema = mongoose.Schema(
         type: String,
       },
     },
-
     educational_history: {
       achievements: {
         type: String,
@@ -369,11 +332,9 @@ const patientSchema = mongoose.Schema(
         type: String,
       },
     },
-
     religious_beliefs: {
       type: String,
     },
-
     past_Treatment_history: {
       detail: {
         type: String,
