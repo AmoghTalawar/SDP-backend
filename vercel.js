@@ -5,7 +5,14 @@ import dotenv from "dotenv";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import connectDB from "./config/db.js";
 import User from "./models/userModel.js";
+import Patient from "./models/patientModel.js";
+import Location from "./models/locationModel.js";
+import Camp from "./models/campModel.js";
 import { generateToken } from "./utils/generateToken.js";
+import userRoutes from "./routes/userRoutes.js";
+import patientRoutes from "./routes/patientRoutes.js";
+import locationRoutes from "./routes/locationRoutes.js";
+import campRoutes from "./routes/campRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -228,6 +235,13 @@ app.post("/api/user/login", async (req, res) => {
     });
   }
 });
+
+// API Routes for dashboard data fetching
+app.use("/api/location", locationRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/patient", patientRoutes);
+app.use("/api/camp", campRoutes);
+app.use("/api/prediction", predictionRoutes);
 
 // Add a simple fallback route for testing
 app.get("/ping", (req, res) => {
