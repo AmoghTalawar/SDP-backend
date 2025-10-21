@@ -31,12 +31,12 @@ const connectDB = async () => {
 
     // Modern MongoDB connection options for serverless
     const options = {
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      maxPoolSize: 5, // Maintain up to 5 socket connections
+      serverSelectionTimeoutMS: 10000, // Keep trying to send operations for 10 seconds
+      socketTimeoutMS: 30000, // Close sockets after 30 seconds of inactivity
       bufferCommands: false, // Disable mongoose buffering
       bufferMaxEntries: 0, // Disable mongoose buffering
-      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+      maxIdleTimeMS: 15000, // Close connections after 15 seconds of inactivity
       family: 4, // Use IPv4, skip trying IPv6
     };
 
