@@ -13,6 +13,8 @@ import userRoutes from "./routes/userRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import locationRoutes from "./routes/locationRoutes.js";
 import campRoutes from "./routes/campRoutes.js";
+import iotRoutes from "./routes/iotRoutes.js";
+import predictionRoutes from "./routes/predictionRoute.js";
 
 // Load environment variables
 dotenv.config();
