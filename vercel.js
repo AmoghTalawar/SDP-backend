@@ -9,6 +9,7 @@ import Patient from "./models/patientModel.js";
 import Location from "./models/locationModel.js";
 import Camp from "./models/campModel.js";
 import { generateToken } from "./utils/generateToken.js";
+import { getLanguageFromRequest, translate } from "./utils/translations.js";
 import userRoutes from "./routes/userRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import locationRoutes from "./routes/locationRoutes.js";
@@ -206,10 +207,11 @@ app.post("/test-login", async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
+    const language = getLanguageFromRequest(req);
     return res.status(400).json({
       code: 400,
       success: false,
-      message: "Email and Password Both are Required",
+      message: translate('loginRequired', language),
     });
   }
 
@@ -260,10 +262,11 @@ app.post("/api/user/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
+      const language = getLanguageFromRequest(req);
       return res.status(400).json({
         code: 400,
         success: false,
-        message: "Email and Password Both are Required",
+        message: translate('loginRequired', language),
       });
     }
 
@@ -351,9 +354,10 @@ app.post("/api/user/login", async (req, res) => {
 
       if (user && user.password === password) {
         console.log("Database authentication successful for:", email);
+        const language = getLanguageFromRequest(req);
         return res.json({
           code: 200,
-          message: "User logged in successfully",
+          message: translate('userLoggedIn', language),
           data: {
             _id: user._id,
             name: user.name,
@@ -364,17 +368,19 @@ app.post("/api/user/login", async (req, res) => {
         });
       } else if (user) {
         console.log("Password mismatch for:", email);
+        const language = getLanguageFromRequest(req);
         return res.status(401).json({
           code: 401,
           success: false,
-          message: "Email and Password do not match",
+          message: translate('invalidCredentials', language),
         });
       } else {
         console.log("User not found:", email);
+        const language = getLanguageFromRequest(req);
         return res.status(404).json({
           code: 404,
           success: false,
-          message: "User Doesn't Exist!",
+          message: translate('userNotFound', language),
         });
       }
     } catch (dbError) {
