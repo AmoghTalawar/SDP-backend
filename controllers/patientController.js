@@ -9,16 +9,43 @@ const registerPatient = async (req, res) => {
     const faculty = req.user._id;
     const obj = req.body.obj;
     console.log(obj);
+    console.log("Faculty ID:", faculty);
+    console.log("Faculty type:", typeof faculty);
 
-    // Camp ID is now optional - will be set to null if not provided
-    // if (!obj.campId) {
-    //   return res.status(400).json({
-    //     code: 400,
-    //     message: "Camp ID is required",
-    //   });
-    // }
+    // Handle fallback authentication case
+    if (typeof faculty === "string" && (faculty.includes("admin-user-id") || faculty.includes("faculty-user-id") || faculty.includes("nurse-user-id"))) {
+      // For fallback authentication, try to use a real faculty from database
+      try {
+        const User = (await import("../models/userModel.js")).default;
+        const existingFaculty = await User.findOne({ role: "faculty" });
 
-    obj.faculty = faculty;
+        if (existingFaculty) {
+          obj.faculty = existingFaculty._id;
+          console.log("Using existing faculty:", existingFaculty._id);
+        } else {
+          // Create a temporary faculty user for fallback
+          const tempFaculty = await User.create({
+            name: "System Faculty",
+            email: "system@fallback.com",
+            password: "temp123",
+            role: "faculty"
+          });
+          obj.faculty = tempFaculty._id;
+          console.log("Created temp faculty:", tempFaculty._id);
+        }
+      } catch (userError) {
+        console.error("Error handling faculty:", userError.message);
+        return res.status(500).json({
+          code: 500,
+          success: false,
+          message: "Error processing faculty information",
+          error: userError.message,
+        });
+      }
+    } else {
+      obj.faculty = faculty;
+    }
+
     obj.patientId = (await Patient.countDocuments()) + 1;
 
     const patient = await Patient.create(obj);
@@ -110,6 +137,18 @@ const getPatientByUser = async (req, res) => {
     await connectDB();
 
     const user = req.user._id;
+
+    // Handle fallback authentication case
+    if (typeof user === "string" && (user.includes("admin-user-id") || user.includes("faculty-user-id") || user.includes("nurse-user-id"))) {
+      // For admin users, return all patients
+      const patient = await Patient.find();
+      return res.status(200).json({
+        code: 200,
+        success: true,
+        message: "patient get successful",
+        data: patient,
+      });
+    }
 
     const patient = await Patient.find({ faculty: user });
 
