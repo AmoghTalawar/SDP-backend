@@ -28,17 +28,19 @@ const connectDB = async () => {
     connectionAttempts++;
     console.log(`MongoDB connection attempt ${connectionAttempts}/${MAX_CONNECTION_ATTEMPTS}`);
 
-    // Ultra-fast connection options for serverless
+    // Optimized connection options for serverless
     const options = {
-      serverSelectionTimeoutMS: 3000, // 3 seconds (faster timeout)
-      socketTimeoutMS: 10000, // 10 seconds (reduced timeout)
-      connectTimeoutMS: 3000, // 3 seconds connection timeout
+      serverSelectionTimeoutMS: 5000, // 5 seconds
+      socketTimeoutMS: 15000, // 15 seconds
+      connectTimeoutMS: 5000, // 5 seconds connection timeout
       bufferCommands: false,
       bufferMaxEntries: 0,
       maxPoolSize: 1,
       minPoolSize: 0,
-      maxIdleTimeMS: 5000,
+      maxIdleTimeMS: 10000,
       family: 4,
+      retryWrites: true,
+      retryReads: true,
     };
 
     const conn = await mongoose.connect(mongoUri, options);

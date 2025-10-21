@@ -67,6 +67,35 @@ app.get("/deployment-status", (req, res) => {
   });
 });
 
+// Database connection test endpoint
+app.get("/api/db-test", async (req, res) => {
+  try {
+    console.log("Testing database connection...");
+    const conn = await connectDB();
+    console.log("Database connection test successful");
+
+    res.json({
+      success: true,
+      message: "Database connection successful",
+      host: conn.connection.host,
+      database: conn.connection.name,
+      timestamp: new Date().toISOString(),
+      mongodb_uri_configured: !!process.env.MONGO_URI
+    });
+  } catch (error) {
+    console.error("Database connection test failed:", error.message);
+
+    res.status(503).json({
+      success: false,
+      message: "Database connection failed",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+      mongodb_uri_configured: !!process.env.MONGO_URI,
+      suggestion: "Check MongoDB connection string and network access"
+    });
+  }
+});
+
 // Simple login test with mock data (for testing when DB is down)
 app.post("/test-login", async (req, res) => {
   const { email, password } = req.body;
@@ -114,12 +143,17 @@ app.post("/api/user/login", async (req, res) => {
       });
     }
 
-    // Try database authentication first with timeout protection
+    // Try database authentication first with improved error handling
     try {
+      console.log("Attempting database connection for login...");
       const conn = await connectDB();
+      console.log("Database connected successfully");
+
       const user = await User.findOne({ email });
+      console.log("User lookup completed for:", email);
 
       if (user && (await user.matchPassword(password))) {
+        console.log("Authentication successful for:", email);
         return res.json({
           code: 200,
           message: "User logged in successfully",
@@ -132,12 +166,14 @@ app.post("/api/user/login", async (req, res) => {
           },
         });
       } else if (user) {
+        console.log("Password mismatch for:", email);
         return res.status(401).json({
           code: 401,
           success: false,
           message: "Email and Password do not match",
         });
       } else {
+        console.log("User not found:", email);
         return res.status(404).json({
           code: 404,
           success: false,
@@ -145,10 +181,11 @@ app.post("/api/user/login", async (req, res) => {
         });
       }
     } catch (dbError) {
-      console.error("Database authentication failed:", dbError);
+      console.error("Database authentication failed:", dbError.message);
 
       // Fallback to mock authentication for testing
       if (email === "test@test.com" && password === "test123") {
+        console.log("Using fallback authentication for test user");
         return res.json({
           code: 200,
           message: "Login successful (fallback mode)",
@@ -162,12 +199,16 @@ app.post("/api/user/login", async (req, res) => {
         });
       }
 
+      // For real users, provide more specific error information
+      console.error("Database connection failed for real user:", email);
+
       // Return database error for real authentication attempts
       return res.status(503).json({
         code: 503,
         success: false,
         message: "Database temporarily unavailable - please try again in a few moments",
-        error: "DATABASE_ERROR"
+        error: "DATABASE_ERROR",
+        details: process.env.NODE_ENV === "development" ? dbError.message : "Contact administrator"
       });
     }
   } catch (error) {
