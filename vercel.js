@@ -53,12 +53,72 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-// Apply CORS middleware first
+// Apply CORS middleware first - but also handle Vercel serverless specifics
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://sdp-client-cy7h.vercel.app",
+    "https://sdp-client-tau.vercel.app"
+  ];
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+
+  // Handle preflight requests immediately
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Max-Age', '86400');
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+// Also apply the cors middleware as backup
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly for all routes
-app.options("/api/*", cors(corsOptions));
-app.options("*", cors(corsOptions));
+// Handle preflight requests explicitly for all routes - this is crucial for Vercel
+app.options("/api/*", (req, res) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://sdp-client-cy7h.vercel.app",
+    "https://sdp-client-tau.vercel.app"
+  ];
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+  res.sendStatus(200);
+});
+
+app.options("*", (req, res) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://sdp-client-cy7h.vercel.app",
+    "https://sdp-client-tau.vercel.app"
+  ];
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.sendStatus(200);
+});
 
 // JSON parser after CORS
 app.use(express.json({ limit: '10mb' }));
@@ -176,7 +236,7 @@ app.post("/test-login", async (req, res) => {
 // User login endpoint with fallback authentication
 app.post("/api/user/login", async (req, res) => {
   try {
-    // Set CORS headers explicitly for this endpoint
+    // Set CORS headers explicitly for this endpoint - this is critical for Vercel serverless
     const origin = req.headers.origin;
     const allowedOrigins = [
       "http://localhost:3000",
@@ -187,10 +247,13 @@ app.post("/api/user/login", async (req, res) => {
 
     if (origin && allowedOrigins.includes(origin)) {
       res.header('Access-Control-Allow-Origin', origin);
+    } else if (origin) {
+      // Log blocked origins for debugging
+      console.log(`Blocked origin attempt: ${origin}`);
     }
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
 
     const { email, password } = req.body;
 
