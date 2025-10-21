@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 // Global connection cache for serverless
 let cachedConnection = null;
 let connectionAttempts = 0;
-const MAX_CONNECTION_ATTEMPTS = 2; // Reduced for faster failure
+const MAX_CONNECTION_ATTEMPTS = 3;
+const CONNECTION_RETRY_DELAY = 1000; // 1 second delay between retries
 
 const connectDB = async () => {
   try {
@@ -28,11 +29,18 @@ const connectDB = async () => {
     connectionAttempts++;
     console.log(`MongoDB connection attempt ${connectionAttempts}/${MAX_CONNECTION_ATTEMPTS}`);
 
-    // Modern MongoDB connection options
+    // Modern MongoDB connection options for serverless
     const options = {
-      // Only use supported options - no deprecated options
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      bufferCommands: false, // Disable mongoose buffering
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+      family: 4, // Use IPv4, skip trying IPv6
     };
 
+    // For Vercel serverless, add connection timeout and retry logic
     const conn = await mongoose.connect(mongoUri, options);
     cachedConnection = conn;
     connectionAttempts = 0; // Reset on successful connection
@@ -46,10 +54,11 @@ const connectDB = async () => {
     // If we've tried multiple times, throw the error
     if (connectionAttempts >= MAX_CONNECTION_ATTEMPTS) {
       connectionAttempts = 0;
-      throw new Error(`Failed to connect to MongoDB after ${MAX_CONNECTION_ATTEMPTS} attempts`);
+      throw new Error(`Failed to connect to MongoDB after ${MAX_CONNECTION_ATTEMPTS} attempts: ${error.message}`);
     }
 
-    throw error;
+    // For serverless environments, don't retry immediately - let the function fail and retry on next invocation
+    throw new Error(`Database connection failed: ${error.message}`);
   }
 };
 

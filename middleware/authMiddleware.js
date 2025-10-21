@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
+import connectDB from "../config/db.js";
 
 const protect = asyncHandler(async (req, res, next) => {
   let token;
@@ -17,9 +18,26 @@ const protect = asyncHandler(async (req, res, next) => {
         throw new Error("Server configuration error");
       }
 
+      // Verify JWT token first (without database)
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+      // Ensure database connection before querying user
+      try {
+        await connectDB();
+      } catch (dbError) {
+        console.error("Database connection failed in auth middleware:", dbError.message);
+        res.status(503);
+        throw new Error("Database temporarily unavailable");
+      }
+
+      // Now query the user from database
       req.user = await User.findById(decoded.id).select("-password");
+
+      if (!req.user) {
+        res.status(401);
+        throw new Error("User not found");
+      }
+
       // if (!req.user.emailVerified) {
       //   res.status(403).json({ error: "You need to verify your account" });
       //   throw new Error("Not authorized, no token");
@@ -27,7 +45,13 @@ const protect = asyncHandler(async (req, res, next) => {
 
       next();
     } catch (error) {
-      console.error(error);
+      console.error("Auth middleware error:", error.message);
+
+      if (error.message === "Database temporarily unavailable") {
+        res.status(503);
+        throw error;
+      }
+
       res.status(401);
       throw new Error("Not authorized, token failed");
     }

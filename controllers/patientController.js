@@ -1,35 +1,49 @@
 import Patient from "../models/patientModel.js";
+import connectDB from "../config/db.js";
 
 const registerPatient = async (req, res) => {
-  const faculty = req.user._id;
-  const obj = req.body.obj;
-  console.log(obj);
+  try {
+    // Ensure database connection
+    await connectDB();
 
-  // Camp ID is now optional - will be set to null if not provided
-  // if (!obj.campId) {
-  //   return res.status(400).json({
-  //     code: 400,
-  //     message: "Camp ID is required",
-  //   });
-  // }
+    const faculty = req.user._id;
+    const obj = req.body.obj;
+    console.log(obj);
 
-  obj.faculty = faculty;
-  obj.patientId = (await Patient.countDocuments()) + 1;
+    // Camp ID is now optional - will be set to null if not provided
+    // if (!obj.campId) {
+    //   return res.status(400).json({
+    //     code: 400,
+    //     message: "Camp ID is required",
+    //   });
+    // }
 
-  const patient = await Patient.create(obj);
+    obj.faculty = faculty;
+    obj.patientId = (await Patient.countDocuments()) + 1;
 
-  if (patient) {
-    return res.status(200).json({
-      code: 200,
-      success: true,
-      message: "Patient created successfully",
-      patient,
-    });
-  } else {
+    const patient = await Patient.create(obj);
+
+    if (patient) {
+      return res.status(200).json({
+        code: 200,
+        success: true,
+        message: "Patient created successfully",
+        patient,
+      });
+    } else {
+      return res.status(500).json({
+        code: 500,
+        success: false,
+        message: "error creating patient",
+      });
+    }
+  } catch (error) {
+    console.error("Error in registerPatient:", error.message);
     return res.status(500).json({
       code: 500,
       success: false,
-      message: "error creating patient",
+      message: "Internal server error",
+      error: error.message,
     });
   }
 };
@@ -67,22 +81,27 @@ const updatePatient = async (req, res) => {
 };
 
 const getAllPatient = async (req, res) => {
-  const patient = await Patient.find();
+  try {
+    // Ensure database connection
+    await connectDB();
 
-  if (!patient) {
+    const patient = await Patient.find();
+
+    res.status(200).json({
+      code: 200,
+      success: true,
+      message: "patient get successfully",
+      data: patient,
+    });
+  } catch (error) {
+    console.error("Error in getAllPatient:", error.message);
     return res.status(500).json({
       code: 500,
       success: false,
       message: "Error getting patient",
+      error: error.message,
     });
   }
-
-  res.status(200).json({
-    code: 200,
-    success: true,
-    message: "patient get successfully",
-    data: patient,
-  });
 };
 
 const getPatientByUser = async (req, res) => {
@@ -173,22 +192,27 @@ const allocatePatient = async (req, res) => {
 };
 
 const getUnallocatedPatients = async (req, res) => {
-  const patient = await Patient.find({ allocated: "no" });
+  try {
+    // Ensure database connection
+    await connectDB();
 
-  if (!patient) {
+    const patient = await Patient.find({ allocated: "no" });
+
+    return res.status(200).json({
+      code: 200,
+      success: true,
+      message: "patient get successful",
+      data: patient,
+    });
+  } catch (error) {
+    console.error("Error in getUnallocatedPatients:", error.message);
     return res.status(500).json({
       code: 500,
       success: false,
       message: "error getting patient",
+      error: error.message,
     });
   }
-
-  return res.status(200).json({
-    code: 200,
-    success: true,
-    message: "patient get successful",
-    data: patient,
-  });
 };
 
 ////////////////End/////////////////
