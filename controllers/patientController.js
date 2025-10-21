@@ -46,6 +46,8 @@ const registerPatient = async (req, res) => {
       obj.faculty = faculty;
     }
 
+    // Ensure patient is created as unallocated by default
+    obj.allocated = "no";
     obj.patientId = (await Patient.countDocuments()) + 1;
 
     const patient = await Patient.create(obj);
