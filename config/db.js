@@ -28,11 +28,9 @@ const connectDB = async () => {
     connectionAttempts++;
     console.log(`MongoDB connection attempt ${connectionAttempts}/${MAX_CONNECTION_ATTEMPTS}`);
 
-    // Connection options matching working local version
+    // Modern MongoDB connection options
     const options = {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-      useCreateIndex: true,
+      // Only use supported options - no deprecated options
     };
 
     const conn = await mongoose.connect(mongoUri, options);
