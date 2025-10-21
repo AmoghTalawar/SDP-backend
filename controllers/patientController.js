@@ -105,24 +105,29 @@ const getAllPatient = async (req, res) => {
 };
 
 const getPatientByUser = async (req, res) => {
-  const user = req.user.id;
+  try {
+    // Ensure database connection
+    await connectDB();
 
-  const patient = await Patient.find({ faculty: user });
+    const user = req.user._id;
 
-  if (!patient) {
+    const patient = await Patient.find({ faculty: user });
+
+    return res.status(200).json({
+      code: 200,
+      success: true,
+      message: "patient get successful",
+      data: patient,
+    });
+  } catch (error) {
+    console.error("Error in getPatientByUser:", error.message);
     return res.status(500).json({
       code: 500,
       success: false,
       message: "error getting patient",
+      error: error.message,
     });
   }
-
-  return res.status(200).json({
-    code: 200,
-    success: true,
-    message: "patient get successful",
-    data: patient,
-  });
 };
 
 /////////////////My code///////////

@@ -33,13 +33,21 @@ const protect = asyncHandler(async (req, res, next) => {
         }
       } catch (dbError) {
         console.error("Database connection failed in auth middleware:", dbError.message);
-        // For now, allow authentication to pass even if database is down
-        // This allows the dashboard to work with fallback authentication
-        req.user = {
-          _id: decoded.id,
-          role: "admin",
-          email: "authenticated@example.com"
-        };
+
+        // Check if this is a fallback authentication token (from our login system)
+        if (decoded.id === "admin-user-id" || decoded.id === "test-user-id" || decoded.id === "faculty-user-id" || decoded.id === "nurse-user-id") {
+          // This is a fallback authentication, create user object without database query
+          req.user = {
+            _id: decoded.id,
+            role: "admin",
+            email: "authenticated@example.com",
+            name: "Authenticated User"
+          };
+        } else {
+          // This is a real database user, but database is down
+          res.status(503);
+          throw new Error("Database temporarily unavailable");
+        }
       }
 
       // if (!req.user.emailVerified) {
