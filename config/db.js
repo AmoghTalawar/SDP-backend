@@ -28,19 +28,15 @@ const connectDB = async () => {
     connectionAttempts++;
     console.log(`MongoDB connection attempt ${connectionAttempts}/${MAX_CONNECTION_ATTEMPTS}`);
 
-    // Optimized connection options for serverless
+    // Clean connection options for serverless
     const options = {
-      serverSelectionTimeoutMS: 5000, // 5 seconds
-      socketTimeoutMS: 15000, // 15 seconds
-      connectTimeoutMS: 5000, // 5 seconds connection timeout
+      serverSelectionTimeoutMS: 10000, // 10 seconds
+      socketTimeoutMS: 20000, // 20 seconds
+      connectTimeoutMS: 10000, // 10 seconds connection timeout
       bufferCommands: false,
-      bufferMaxEntries: 0,
       maxPoolSize: 1,
       minPoolSize: 0,
-      maxIdleTimeMS: 10000,
-      family: 4,
-      retryWrites: true,
-      retryReads: true,
+      maxIdleTimeMS: 15000,
     };
 
     const conn = await mongoose.connect(mongoUri, options);
