@@ -14,10 +14,5 @@
       "src": "/(.*)",
       "dest": "/vercel.js"
     }
-  ],
-  "functions": {
-    "vercel.js": {
-      "maxDuration": 60
-    }
-  }
+  ]
 }
