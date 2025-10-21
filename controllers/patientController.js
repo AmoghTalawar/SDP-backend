@@ -12,39 +12,9 @@ const registerPatient = async (req, res) => {
     console.log("Faculty ID:", faculty);
     console.log("Faculty type:", typeof faculty);
 
-    // Handle fallback authentication case
-    if (typeof faculty === "string" && (faculty.includes("admin-user-id") || faculty.includes("faculty-user-id") || faculty.includes("nurse-user-id"))) {
-      // For fallback authentication, try to use a real faculty from database
-      try {
-        const User = (await import("../models/userModel.js")).default;
-        const existingFaculty = await User.findOne({ role: "faculty" });
-
-        if (existingFaculty) {
-          obj.faculty = existingFaculty._id;
-          console.log("Using existing faculty:", existingFaculty._id);
-        } else {
-          // Create a temporary faculty user for fallback
-          const tempFaculty = await User.create({
-            name: "System Faculty",
-            email: "system@fallback.com",
-            password: "temp123",
-            role: "faculty"
-          });
-          obj.faculty = tempFaculty._id;
-          console.log("Created temp faculty:", tempFaculty._id);
-        }
-      } catch (userError) {
-        console.error("Error handling faculty:", userError.message);
-        return res.status(500).json({
-          code: 500,
-          success: false,
-          message: "Error processing faculty information",
-          error: userError.message,
-        });
-      }
-    } else {
-      obj.faculty = faculty;
-    }
+    // For new patient creation, don't assign faculty - leave it unallocated
+    // Faculty assignment happens later through the allocation process
+    obj.faculty = null;
 
     // Ensure patient is created as unallocated by default
     obj.allocated = "no";
