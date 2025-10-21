@@ -35,7 +35,6 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 10000, // Keep trying to send operations for 10 seconds
       socketTimeoutMS: 30000, // Close sockets after 30 seconds of inactivity
       bufferCommands: false, // Disable mongoose buffering
-      bufferMaxEntries: 0, // Disable mongoose buffering
       maxIdleTimeMS: 15000, // Close connections after 15 seconds of inactivity
       family: 4, // Use IPv4, skip trying IPv6
     };

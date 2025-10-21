@@ -287,7 +287,7 @@ app.post("/api/user/login", async (req, res) => {
     }
 
     // Handle admin user
-    if (email === "admin@admin.com" && password === "admin123") {
+    if (email === "admin@admin.com" && password === "123456") {
       console.log("Admin user authentication successful");
       return res.json({
         code: 200,
@@ -298,6 +298,44 @@ app.post("/api/user/login", async (req, res) => {
           email: email,
           role: "admin",
           token: generateToken("admin-user-id"),
+        },
+      });
+    }
+
+    // Handle faculty users
+    const facultyEmails = [
+      "nanda@faulty.com",
+      "deviprasad@faulty.com",
+      "diwakarpujari@faulty.com",
+      "rajesh@faulty.com",
+      "dineshmarathi@faulty.com",
+      "kumar@faulty.com",
+      "nagendra@faulty.com",
+      "vidayadar@faulty.com"
+    ];
+
+    const nurseEmails = [
+      "venkatesh@nurse.com",
+      "Netravati@nurse.com",
+      "jayalakshmi@nurse.com",
+      "philomina@nurse.com",
+      "Ranjita@nurse.com",
+      "soumya@nurse.com",
+      "prasilla@nurse.com"
+    ];
+
+    if ((facultyEmails.includes(email) || nurseEmails.includes(email)) && password === "qwerty") {
+      const role = facultyEmails.includes(email) ? "faculty" : "nurse";
+      console.log(`${role} user authentication successful for: ${email}`);
+      return res.json({
+        code: 200,
+        message: "Login successful",
+        data: {
+          _id: `${role}-user-id`,
+          name: "User",
+          email: email,
+          role: role,
+          token: generateToken(`${role}-user-id`),
         },
       });
     }
