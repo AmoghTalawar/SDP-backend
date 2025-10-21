@@ -19,29 +19,57 @@ dotenv.config();
 
 const app = express();
 
-// Basic middleware
+// Enhanced CORS configuration for production
 const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "https://sdp-client-cy7h.vercel.app",
-    "https://sdp-client-tau.vercel.app"
-  ],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://sdp-client-cy7h.vercel.app",
+      "https://sdp-client-tau.vercel.app"
+    ];
+
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "Access-Control-Request-Method",
+    "Access-Control-Request-Headers"
+  ],
   optionsSuccessStatus: 200,
 };
 
+// Apply CORS middleware first
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(helmet());
 
-// Handle preflight requests
+// Handle preflight requests explicitly for all routes
+app.options("/api/*", cors(corsOptions));
 app.options("*", cors(corsOptions));
+
+// JSON parser after CORS
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(helmet());
 
 // Health check endpoint (no database needed)
 app.get("/", (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.send("API is running....");
 });
 
@@ -148,6 +176,22 @@ app.post("/test-login", async (req, res) => {
 // User login endpoint with fallback authentication
 app.post("/api/user/login", async (req, res) => {
   try {
+    // Set CORS headers explicitly for this endpoint
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://sdp-client-cy7h.vercel.app",
+      "https://sdp-client-tau.vercel.app"
+    ];
+
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    }
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -236,11 +280,12 @@ app.post("/api/user/login", async (req, res) => {
   }
 });
 
-// API Routes for dashboard data fetching
+// API Routes for dashboard data fetching - apply CORS middleware to all routes
 app.use("/api/location", locationRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/camp", campRoutes);
+app.use("/api/iot", iotRoutes);
 app.use("/api/prediction", predictionRoutes);
 
 // Add a simple fallback route for testing
