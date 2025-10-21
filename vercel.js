@@ -14,13 +14,24 @@ const app = express();
 
 // Basic middleware
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:3001", "https://sdp-client-cy7h.vercel.app"], // or the specific domain of your client app
-  optionsSuccessStatus: 200, // For legacy browser support
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://sdp-client-cy7h.vercel.app",
+    "https://sdp-client-tau.vercel.app"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(helmet());
+
+// Handle preflight requests
+app.options("*", cors(corsOptions));
 
 // Health check endpoint (no database needed)
 app.get("/", (req, res) => {
