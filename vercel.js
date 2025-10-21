@@ -14,11 +14,8 @@ const app = express();
 
 // Basic middleware
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:3001", "https://sdp-client-cy7h.vercel.app", "https://sdp-client-tau.vercel.app"],
-  optionsSuccessStatus: 200,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: ["http://localhost:3000", "http://localhost:3001", "https://sdp-client-cy7h.vercel.app"], // or the specific domain of your client app
+  optionsSuccessStatus: 200, // For legacy browser support
 };
 
 app.use(cors(corsOptions));
@@ -27,7 +24,7 @@ app.use(helmet());
 
 // Health check endpoint (no database needed)
 app.get("/", (req, res) => {
-  res.send("✅ API is running successfully on Vercel!");
+  res.send("API is running....");
 });
 
 // Simple health check endpoint
@@ -152,7 +149,7 @@ app.post("/api/user/login", async (req, res) => {
       const user = await User.findOne({ email });
       console.log("User lookup completed for:", email);
 
-      if (user && (await user.matchPassword(password))) {
+      if (user && user.password === password) {
         console.log("Authentication successful for:", email);
         return res.json({
           code: 200,

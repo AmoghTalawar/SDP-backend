@@ -28,15 +28,11 @@ const connectDB = async () => {
     connectionAttempts++;
     console.log(`MongoDB connection attempt ${connectionAttempts}/${MAX_CONNECTION_ATTEMPTS}`);
 
-    // Clean connection options for serverless
+    // Connection options matching working local version
     const options = {
-      serverSelectionTimeoutMS: 10000, // 10 seconds
-      socketTimeoutMS: 20000, // 20 seconds
-      connectTimeoutMS: 10000, // 10 seconds connection timeout
-      bufferCommands: false,
-      maxPoolSize: 1,
-      minPoolSize: 0,
-      maxIdleTimeMS: 15000,
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      useCreateIndex: true,
     };
 
     const conn = await mongoose.connect(mongoUri, options);
