@@ -17,7 +17,7 @@ router
   .route("/")
   .post(protect, registerPatient)
   .put(protect, updatePatient)
-  .get(protect, admin, getAllPatient);
+  .get(protect, getAllPatient);
 
 router
   .route("/user")
