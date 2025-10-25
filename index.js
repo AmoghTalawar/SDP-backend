@@ -31,7 +31,8 @@ const corsOptions = {
     "http://localhost:3000",
     "http://localhost:3001",
     "https://sdp-client-cy7h.vercel.app",
-    "https://sdp-client-tau.vercel.app"
+    "https://sdp-client-tau.vercel.app",
+    "https://sdp-doddabhathi.vercel.app"
   ],
   optionsSuccessStatus: 200,
 };
