@@ -30,7 +30,8 @@ const corsOptions = {
       "http://localhost:3001",
       "https://sdp-client-cy7h.vercel.app",
       "https://sdp-client-tau.vercel.app",
-      "https://sdp-doddabhathi.vercel.app"
+      "https://sdp-doddabhathi.vercel.app",
+      "https://sdp-goa.vercel.app"
     ];
 
     // Allow requests with no origin (mobile apps, Postman, etc.)
@@ -65,7 +66,8 @@ app.use((req, res, next) => {
     "http://localhost:3001",
     "https://sdp-client-cy7h.vercel.app",
     "https://sdp-client-tau.vercel.app",
-    "https://sdp-doddabhathi.vercel.app"
+    "https://sdp-doddabhathi.vercel.app",
+    "https://sdp-goa.vercel.app"
   ];
 
   if (origin && allowedOrigins.includes(origin)) {
@@ -95,7 +97,8 @@ app.options("/api/*", (req, res) => {
     "http://localhost:3001",
     "https://sdp-client-cy7h.vercel.app",
     "https://sdp-client-tau.vercel.app",
-    "https://sdp-doddabhathi.vercel.app"
+    "https://sdp-doddabhathi.vercel.app",
+    "https://sdp-goa.vercel.app"
   ];
 
   if (origin && allowedOrigins.includes(origin)) {
@@ -115,7 +118,8 @@ app.options("*", (req, res) => {
     "http://localhost:3001",
     "https://sdp-client-cy7h.vercel.app",
     "https://sdp-client-tau.vercel.app",
-    "https://sdp-doddabhathi.vercel.app"
+    "https://sdp-doddabhathi.vercel.app",
+    "https://sdp-goa.vercel.app"
   ];
 
   if (origin && allowedOrigins.includes(origin)) {
@@ -251,7 +255,8 @@ app.post("/api/user/login", async (req, res) => {
       "http://localhost:3001",
       "https://sdp-client-cy7h.vercel.app",
       "https://sdp-client-tau.vercel.app",
-      "https://sdp-doddabhathi.vercel.app"
+      "https://sdp-doddabhathi.vercel.app",
+      "https://sdp-goa.vercel.app"
     ];
 
     if (origin && allowedOrigins.includes(origin)) {
